@@ -1,20 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const ServiceController = require('../controllers/service.controller');
-const { auth, isTrainer } = require('../middleware/auth');
+const { authenticate, authorizeTrainer } = require('../middleware/auth');
 const { validateService } = require('../middleware/validation');
 
 // Rutas públicas
+router.get('/', ServiceController.getAll);
 router.get('/search', ServiceController.search);
-router.get('/:id', ServiceController.getById);
+router.get('/categories', ServiceController.getCategories);
+router.get('/zones', ServiceController.getZones);
+router.get('/durations', ServiceController.getDurations);
 router.get('/trainer/:trainerId?', ServiceController.getByTrainer);
+router.get('/:id', ServiceController.getById);
 
-// Rutas protegidas (requieren autenticación)
-router.use(auth);
-
-// Rutas para entrenadores
-router.post('/', isTrainer, validateService, ServiceController.create);
-router.put('/:id', isTrainer, validateService, ServiceController.update);
-router.delete('/:id', isTrainer, ServiceController.delete);
+// Rutas protegidas para entrenadores
+router.post('/', authenticate, authorizeTrainer, validateService, ServiceController.create);
+router.put('/:id', authenticate, authorizeTrainer, validateService, ServiceController.update);
+router.delete('/:id', authenticate, authorizeTrainer, ServiceController.delete);
 
 module.exports = router; 

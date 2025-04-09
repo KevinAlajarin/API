@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 
-const auth = async (req, res, next) => {
+// Middleware para autenticar al usuario
+const authenticate = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
@@ -24,21 +25,41 @@ const auth = async (req, res, next) => {
   }
 };
 
-const isTrainer = async (req, res, next) => {
+// Middleware para autorizar a entrenadores
+const authorizeTrainer = async (req, res, next) => {
   if (req.user.role !== 'trainer') {
     return res.status(403).json({ message: 'Acceso denegado. Se requiere rol de entrenador' });
   }
   next();
 };
 
-const isClient = async (req, res, next) => {
+// Middleware para autorizar a clientes
+const authorizeClient = async (req, res, next) => {
   if (req.user.role !== 'client') {
     return res.status(403).json({ message: 'Acceso denegado. Se requiere rol de cliente' });
   }
   next();
 };
 
+// Middleware para autorizar a administradores
+const authorizeAdmin = async (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Acceso denegado. Se requiere rol de administrador' });
+  }
+  next();
+};
+
+// Mantener compatibilidad con código existente
+const auth = authenticate;
+const isTrainer = authorizeTrainer;
+const isClient = authorizeClient;
+
 module.exports = {
+  authenticate,
+  authorizeTrainer,
+  authorizeClient,
+  authorizeAdmin,
+  // Exportar aliases para compatibilidad
   auth,
   isTrainer,
   isClient

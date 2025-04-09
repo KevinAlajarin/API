@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+# API
+=======
 # Trainer Marketplace
 
 Marketplace para entrenadores personales donde pueden ofrecer sus servicios y los clientes pueden contratarlos.
@@ -107,3 +110,4 @@ trainer-marketplace/
 ## Licencia
 
 Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles. 
+>>>>>>> 61603d6 (Primer commit)

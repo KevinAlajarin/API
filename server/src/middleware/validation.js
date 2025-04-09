@@ -1,17 +1,19 @@
 const yup = require('yup');
 
-const registerSchema = yup.object().shape({
+const userSchema = yup.object().shape({
   firstName: yup.string().required('El nombre es requerido'),
   lastName: yup.string().required('El apellido es requerido'),
   email: yup.string().email('Email inválido').required('El email es requerido'),
   password: yup.string()
+    .required('La contraseña es requerida')
     .min(8, 'La contraseña debe tener al menos 8 caracteres')
-    .matches(/[A-Z]/, 'La contraseña debe tener al menos una mayúscula')
-    .matches(/[0-9]/, 'La contraseña debe tener al menos un número')
-    .matches(/[^A-Za-z0-9]/, 'La contraseña debe tener al menos un carácter especial')
-    .required('La contraseña es requerida'),
+    .matches(
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+      'La contraseña debe contener al menos una mayúscula, un número y un carácter especial'
+    ),
   birthDate: yup.date().required('La fecha de nacimiento es requerida'),
-  role: yup.string().oneOf(['client', 'trainer'], 'Rol inválido').required('El rol es requerido')
+  gender: yup.string().oneOf(['male', 'female'], 'El género debe ser masculino o femenino').required('El género es requerido'),
+  role: yup.string().oneOf(['client', 'trainer'], 'El rol debe ser cliente o entrenador').required('El rol es requerido')
 });
 
 const loginSchema = yup.object().shape({
@@ -41,12 +43,18 @@ const bookingSchema = yup.object().shape({
   notes: yup.string().max(500, 'Las notas no pueden exceder los 500 caracteres')
 });
 
-const validateRegister = async (req, res, next) => {
+const validateUser = async (req, res, next) => {
   try {
-    await registerSchema.validate(req.body, { abortEarly: false });
+    await userSchema.validate(req.body, { abortEarly: false });
     next();
   } catch (error) {
-    res.status(400).json({ message: 'Error de validación', errors: error.errors });
+    res.status(400).json({
+      message: 'Error de validación',
+      errors: error.inner.map(err => ({
+        field: err.path,
+        message: err.message
+      }))
+    });
   }
 };
 
@@ -55,7 +63,13 @@ const validateLogin = async (req, res, next) => {
     await loginSchema.validate(req.body, { abortEarly: false });
     next();
   } catch (error) {
-    res.status(400).json({ message: 'Error de validación', errors: error.errors });
+    res.status(400).json({
+      message: 'Error de validación',
+      errors: error.inner.map(err => ({
+        field: err.path,
+        message: err.message
+      }))
+    });
   }
 };
 
@@ -90,7 +104,7 @@ const validateBooking = async (req, res, next) => {
 };
 
 module.exports = {
-  validateRegister,
+  validateUser,
   validateLogin,
   validateService,
   validateBooking
